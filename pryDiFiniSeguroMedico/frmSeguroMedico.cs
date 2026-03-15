@@ -19,7 +19,7 @@ namespace pryDiFiniSeguroMedico
             public int Experiencia;
             public int Enfermedades;
             public int Accidentes;
-            public string Plan; 
+            public string Plan;
         }
 
         struct Resultados
@@ -39,25 +39,35 @@ namespace pryDiFiniSeguroMedico
             public decimal PorcentajeClientesMayores;
             public decimal PorcentajeClientesAccidentes;
             public decimal TotalRecaudadoEmpresa;
-
-
         }
+
         string[] VecClientesAceptados = new string[20];
         string[] VecClientesRechazados = new string[20];
         string[] Clientes = new string[20];
+
         int i = 0;
         int iAceptados = 0;
         int iRechazados = 0;
+
         string ClienteCostoAlto = "";
         string ClienteCostoBajo = "";
+
+        int ClientesBasico = 0;
+        int ClientesIntermedio = 0;
+        int ClientesPremium = 0;
+
+        decimal TotalRecaudadoEmpresa = 0;
+        decimal CostoFinalAlto = 0;
+        decimal CostoFinalBajo = 0;
+        decimal SumaCostos = 0;
+
         private void btnAceptar_Click(object sender, EventArgs e)
         {
             DatosClientes c;
 
-
             c.DNI = Convert.ToInt32(mskDni.Text);
             c.Nombre = txtNombre.Text;
-            c.Edad = Convert.ToInt32(nudEdad.Text);
+            c.Edad = Convert.ToInt32(nudEdad.Value);
             c.Sexo = cmbSexo.SelectedIndex == 0;
             c.LicenciaValida = cmbLicenciaValida.SelectedIndex == 0;
             c.Experiencia = Convert.ToInt32(txtExperiencia.Text);
@@ -81,16 +91,6 @@ namespace pryDiFiniSeguroMedico
                 c.Plan = "No seleccionado";
             }
 
-            if (i < Clientes.Length)
-            {
-                Clientes[i] = c.Nombre;
-                i = i + 1;
-            }
-            else
-            {
-                MessageBox.Show("No se pueden ingresar más clientes, límite alcanzado.");
-            }
-
             Resultados r;
 
             decimal CostoBase = 0;
@@ -98,43 +98,28 @@ namespace pryDiFiniSeguroMedico
 
             decimal DescuentosAplicados = 0;
             r.DescuentosAplicados = DescuentosAplicados;
+
             decimal RecargosAplicados = 0;
             r.RecargosAplicados = RecargosAplicados;
 
-            int ClientesAceptados = 0;
-            r.ClientesAceptados = ClientesAceptados;
-            int ClientesRechazados = 0;
-            r.ClientesRechazados = ClientesRechazados;
-
             decimal PromedioCostoFinal = 0;
             r.PromedioCostoFinal = PromedioCostoFinal;
+
             decimal CostoFinal = 0;
             r.CostoFinal = CostoFinal;
-            decimal CostoFinalAlto = 0;
-            r.CostoFinalAlto = CostoFinalAlto;
-            decimal CostoFinalBajo = 0;
-            r.CostoFinalBajo = CostoFinalBajo;
-
-            int ClientesBasico = 0;
-            r.ClientesBasico = ClientesBasico;
-            int ClientesIntermedio = 0;
-            r.ClientesIntermedio = ClientesIntermedio;
-            int ClientesPremium = 0;
-            r.ClientesPremium = ClientesPremium;
 
             decimal PorcentajeClientesMayores = 0;
             r.PorcentajeClientesMayores = PorcentajeClientesMayores;
+
             decimal PorcentajeClientesAccidentes = 0;
             r.PorcentajeClientesAccidentes = PorcentajeClientesAccidentes;
-
-            decimal TotalRecaudadoEmpresa = 0;
-            r.TotalRecaudadoEmpresa = TotalRecaudadoEmpresa;
 
             if (c.Enfermedades < 0)
             {
                 MessageBox.Show("Las enfermedades no pueden ser negativas");
                 return;
             }
+
             if (c.Accidentes < 0)
             {
                 MessageBox.Show("Los accidentes no pueden ser negativos");
@@ -158,12 +143,22 @@ namespace pryDiFiniSeguroMedico
                 MessageBox.Show("Seguro rechazado");
                 return;
             }
+
             if (c.Accidentes > 10)
             {
                 MessageBox.Show("Seguro rechazado");
                 return;
             }
 
+            if (i < Clientes.Length)
+            {
+                Clientes[i] = c.Nombre;
+                i = i + 1;
+            }
+            else
+            {
+                MessageBox.Show("No se pueden ingresar más clientes, límite alcanzado.");
+            }
 
             if (rdbBasico.Checked)
             {
@@ -199,13 +194,17 @@ namespace pryDiFiniSeguroMedico
             }
 
             int ClientesMayores = 0;
+
             if (c.Edad > 50)
             {
                 RecargosAplicadosEdadMayores = RecargosAplicadosEdadMayores + 0.15m;
                 ClientesMayores = ClientesMayores + 1;
             }
 
-            PorcentajeClientesMayores = ClientesMayores / i;
+            if (i > 0)
+            {
+                PorcentajeClientesMayores = (decimal)ClientesMayores / i * 100;
+            }
 
             if (c.Edad < 25)
             {
@@ -219,7 +218,6 @@ namespace pryDiFiniSeguroMedico
 
             RecargosAplicados = RecargosAplicadosAccidentes + RecargosAplicadosEnfermedades + RecargosAplicadosEdadMayores + RecargosAplicadosEdadMenores + RecargosAplicadosExperiencia;
 
-
             decimal DescuentosAplicadosEnfermedades = 0;
             decimal DescuentosAplicadosAccidentes = 0;
             decimal DescuentosAplicadosExperiencia = 0;
@@ -230,12 +228,17 @@ namespace pryDiFiniSeguroMedico
             }
 
             int ClientesAccidentes = 0;
+
             if (c.Accidentes == 0)
             {
                 DescuentosAplicadosAccidentes = DescuentosAplicadosAccidentes - 0.05m;
                 ClientesAccidentes = ClientesAccidentes + 1;
             }
-            PorcentajeClientesAccidentes = ClientesAccidentes / i; 
+
+            if (i > 0)
+            {
+                PorcentajeClientesAccidentes = (decimal)ClientesAccidentes / i * 100;
+            }
 
             if (c.Experiencia > 10)
             {
@@ -244,47 +247,33 @@ namespace pryDiFiniSeguroMedico
 
             DescuentosAplicados = DescuentosAplicadosEnfermedades + DescuentosAplicadosAccidentes + DescuentosAplicadosExperiencia;
 
-
-            if (c.Edad < 18 && c.Edad > 80 && c.Experiencia > c.Edad - 17 && c.LicenciaValida == false && c.Enfermedades > 5 && c.Accidentes > 10)
+            if (iAceptados < VecClientesAceptados.Length)
             {
-                if (iRechazados < VecClientesRechazados.Length)
-                {
-                    VecClientesRechazados[iRechazados] = c.Nombre;
-                    iRechazados = iRechazados + 1;
-                }
-                else
-                {
-                    MessageBox.Show("No se pueden ingresar más clientes, límite alcanzado.");
-                }
+                VecClientesAceptados[iAceptados] = c.Nombre;
+                iAceptados = iAceptados + 1;
             }
-            else
-            {
-                if (iAceptados < VecClientesAceptados.Length)
-                {
-                    VecClientesAceptados[iAceptados] = c.Nombre;
-                    iAceptados = iAceptados + 1;
-                }
-                else
-                {
-                    MessageBox.Show("No se pueden ingresar más clientes, límite alcanzado.");
-                }
 
-                if (c.Plan == "Basico")
-                {
-                    ClientesBasico = ClientesBasico + 1;
-                }
-                else if (c.Plan == "Intermedio")
-                {
-                    ClientesIntermedio = ClientesIntermedio + 1;
-                }
-                else if (c.Plan == "Premium")
-                {
-                    ClientesPremium = ClientesPremium + 1;
-                }
+            if (c.Plan == "Basico")
+            {
+                ClientesBasico = ClientesBasico + 1;
+            }
+            else if (c.Plan == "Intermedio")
+            {
+                ClientesIntermedio = ClientesIntermedio + 1;
+            }
+            else if (c.Plan == "Premium")
+            {
+                ClientesPremium = ClientesPremium + 1;
             }
 
             CostoFinal = CostoBase + (CostoBase * RecargosAplicados) - (CostoBase * DescuentosAplicados);
-            PromedioCostoFinal = CostoFinal / iAceptados;
+
+            SumaCostos = SumaCostos + CostoFinal;
+
+            if (iAceptados > 0)
+            {
+                PromedioCostoFinal = SumaCostos / iAceptados;
+            }
 
             if (CostoFinal > CostoFinalAlto)
             {
@@ -303,11 +292,9 @@ namespace pryDiFiniSeguroMedico
                 ClienteCostoBajo = c.Nombre;
             }
 
-            if (iAceptados < VecClientesAceptados.Length)
-            {
-                TotalRecaudadoEmpresa = TotalRecaudadoEmpresa + CostoFinal;
-                iAceptados = iAceptados + 1;
-            }
+            TotalRecaudadoEmpresa = TotalRecaudadoEmpresa + CostoFinal;
+
+            lstResultados.Items.Clear();
 
             lstResultados.Items.Add("Cantidad de clientes aceptados: " + iAceptados);
             lstResultados.Items.Add("Cantidad de clientes rechazados: " + iRechazados);
@@ -320,8 +307,6 @@ namespace pryDiFiniSeguroMedico
             lstResultados.Items.Add("Porcentaje de clientes mayores: % " + PorcentajeClientesMayores);
             lstResultados.Items.Add("Porcentaje de clientes con accidentes : % " + PorcentajeClientesAccidentes);
             lstResultados.Items.Add("Total recaudado por la empresa: $ " + TotalRecaudadoEmpresa);
-
-
         }
 
         private void btnSalir_Click(object sender, EventArgs e)
@@ -331,10 +316,9 @@ namespace pryDiFiniSeguroMedico
 
         private void txtNombre_KeyPress(object sender, KeyPressEventArgs e)
         {
-            // Permite solo letras y la tecla Backspace
             if (!char.IsLetter(e.KeyChar) && !char.IsControl(e.KeyChar))
             {
-                e.Handled = true; // Bloquea la tecla
+                e.Handled = true;
             }
         }
 
@@ -342,16 +326,15 @@ namespace pryDiFiniSeguroMedico
         {
             if (!char.IsDigit(e.KeyChar) && !char.IsControl(e.KeyChar))
             {
-                e.Handled = true; // Bloquea la tecla
+                e.Handled = true;
             }
-
         }
 
         private void txtEnfermedades_KeyPress(object sender, KeyPressEventArgs e)
         {
             if (!char.IsDigit(e.KeyChar) && !char.IsControl(e.KeyChar))
             {
-                e.Handled = true; // Bloquea la tecla
+                e.Handled = true;
             }
         }
 
@@ -359,12 +342,8 @@ namespace pryDiFiniSeguroMedico
         {
             if (!char.IsDigit(e.KeyChar) && !char.IsControl(e.KeyChar))
             {
-                e.Handled = true; // Bloquea la tecla
+                e.Handled = true;
             }
         }
-
-     
     }
-
-
 }
